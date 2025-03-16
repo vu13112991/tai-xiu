@@ -1,84 +1,68 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Tài Xỉu</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Game Tài Xỉu</h1>
-        <p>Số dư: <span id="balance">1000</span> VND</p>
-        
-        <label for="betAmount">Số tiền cược:</label>
-        <input type="number" id="betAmount" min="1" value="100">
-        
-        <button onclick="playGame('tai')">Cược Tài</button>
-        <button onclick="playGame('xiu')">Cược Xỉu</button>
-        
-        <div id="result"></div>
-        <div id="dice">
-            🎲 🎲 🎲
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import Sidebar from "../components/Sidebar"; // Adjusted import path
+
+const sampleBots = [
+  {
+    id: 1,
+    name: "Bot Scalping EUR/USD",
+    status: "Running",
+    profit: 1200,
+    risk: "Medium",
+    performance: [
+      { time: "Day 1", value: 200 },
+      { time: "Day 2", value: 500 },
+      { time: "Day 3", value: 800 },
+      { time: "Day 4", value: 1200 },
+    ],
+  },
+  {
+    id: 2,
+    name: "Bot Trend Following GBP/USD",
+    status: "Stopped",
+    profit: 800,
+    risk: "Low",
+    performance: [
+      { time: "Day 1", value: 100 },
+      { time: "Day 2", value: 300 },
+      { time: "Day 3", value: 600 },
+      { time: "Day 4", value: 800 },
+    ],
+  },
+];
+
+export default function Dashboard() {
+  const [bots, setBots] = useState(sampleBots);
+
+  return (
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="flex-1 p-6">
+        <h1 className="text-2xl font-bold mb-4">Dashboard Bot Giao Dịch</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {bots.map((bot) => (
+            <Card key={bot.id} className="p-4">
+              <h2 className="text-xl font-semibold">{bot.name}</h2>
+              <p className={`text-sm ${bot.status === "Running" ? "text-green-500" : "text-red-500"}`}>{bot.status}</p>
+              <p className="text-sm">Lợi nhuận: ${bot.profit}</p>
+              <p className="text-sm">Rủi ro: {bot.risk}</p>
+              <ResponsiveContainer width="100%" height={100}>
+                <LineChart data={bot.performance}>
+                  <XAxis dataKey="time" hide />
+                  <YAxis hide />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+              <Button className="mt-2" variant="outline">
+                {bot.status === "Running" ? "Dừng Bot" : "Khởi Động Bot"}
+              </Button>
+            </Card>
+          ))}
         </div>
+      </div>
     </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
-
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #282c34;
-    color: white;
-}
-
-.container {
-    margin-top: 50px;
-}
-
-button {
-    padding: 10px 20px;
-    margin: 10px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-#dice {
-    font-size: 30px;
-    margin-top: 20px;
-}
-
-let balance = 1000;
-
-function playGame(choice) {
-    let bet = parseInt(document.getElementById("betAmount").value);
-    
-    if (bet > balance || bet <= 0) {
-        alert("Số tiền cược không hợp lệ!");
-        return;
-    }
-
-    // Xúc xắc ngẫu nhiên
-    let dice1 = Math.floor(Math.random() * 6) + 1;
-    let dice2 = Math.floor(Math.random() * 6) + 1;
-    let dice3 = Math.floor(Math.random() * 6) + 1;
-    let total = dice1 + dice2 + dice3;
-
-    let resultText = `🎲 Xúc xắc: ${dice1} - ${dice2} - ${dice3} (Tổng: ${total})`;
-
-    let isTai = total >= 11; // Tài: 11-18, Xỉu: 3-10
-    let won = (choice === 'tai' && isTai) || (choice === 'xiu' && !isTai);
-
-    if (won) {
-        balance += bet;
-        resultText += "<br><b>🎉 Bạn thắng! + " + bet + " VND</b>";
-    } else {
-        balance -= bet;
-        resultText += "<br><b>😢 Bạn thua! - " + bet + " VND</b>";
-    }
-
-    document.getElementById("result").innerHTML = resultText;
-    document.getElementById("balance").innerText = balance;
+  );
 }
